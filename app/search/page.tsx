@@ -1,6 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
+
+import { useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { IssueCard } from "@/components/issue-card"
 import { SearchBar } from "@/components/search-bar"

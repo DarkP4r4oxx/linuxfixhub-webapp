@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "./theme-toggle"
+import { AuthButton } from "./auth-button"
 
 export function Navigation() {
   const pathname = usePathname()
@@ -29,7 +30,12 @@ export function Navigation() {
             </Link>
             <Link href="/search">
               <Button variant={isActive("/search") ? "default" : "ghost"} size="sm" className="text-xs sm:text-sm">
-                Search
+                Issues
+              </Button>
+            </Link>
+            <Link href="/problems">
+              <Button variant={isActive("/problems") ? "default" : "ghost"} size="sm" className="text-xs sm:text-sm">
+                Questions
               </Button>
             </Link>
             <Link href="/submit">
@@ -42,12 +48,8 @@ export function Navigation() {
                 About
               </Button>
             </Link>
-            <Link href="/contact">
-              <Button variant={isActive("/contact") ? "default" : "ghost"} size="sm" className="text-xs sm:text-sm">
-                Contact
-              </Button>
-            </Link>
             <ThemeToggle />
+            <AuthButton />
           </div>
         </div>
       </div>

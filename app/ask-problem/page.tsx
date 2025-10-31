@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -10,23 +10,38 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { CATEGORIES, DISTROS } from "@/lib/data"
-import { useIssueStore } from "@/lib/store"
+import { createClient } from "@/lib/supabase/client"
 import { ArrowLeft, CheckCircle } from "lucide-react"
 
-export default function SubmitPage() {
+export default function AskProblemPage() {
   const router = useRouter()
-  const addIssue = useIssueStore((state) => state.addIssue)
+  const supabase = createClient()
+  const [user, setUser] = useState<any>(null)
   const [submitted, setSubmitted] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     distro: "Ubuntu" as const,
     category: "",
     tags: "",
-    stepsToFix: "",
-    commands: "",
   })
+
+  useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) {
+        router.push("/auth/login")
+      } else {
+        setUser(user)
+      }
+      setIsLoading(false)
+    }
+    getUser()
+  }, [supabase.auth, router])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -36,14 +51,14 @@ export default function SubmitPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.title || !formData.description || !formData.category || !formData.stepsToFix) {
+    if (!formData.title || !formData.description || !formData.category) {
       alert("Please fill in all required fields")
       return
     }
 
-    setIsLoading(true)
+    setIsSubmitting(true)
     try {
-      const response = await fetch("/api/issues", {
+      const response = await fetch("/api/problems", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -55,29 +70,28 @@ export default function SubmitPage() {
             .split(",")
             .map((tag) => tag.trim())
             .filter((tag) => tag),
-          stepsToFix: formData.stepsToFix,
-          commands: formData.commands
-            .split("\n")
-            .map((cmd) => cmd.trim())
-            .filter((cmd) => cmd),
         }),
       })
 
       if (response.ok) {
-        const newIssue = await response.json()
+        const newProblem = await response.json()
         setSubmitted(true)
         setTimeout(() => {
-          router.push(`/issue/${newIssue.id}`)
+          router.push(`/problem/${newProblem.id}`)
         }, 2000)
       } else {
-        alert("Failed to submit issue")
+        alert("Failed to submit problem")
       }
     } catch (error) {
-      console.error("[v0] Error submitting issue:", error)
-      alert("Error submitting issue")
+      console.error("[v0] Error submitting problem:", error)
+      alert("Error submitting problem")
     } finally {
-      setIsLoading(false)
+      setIsSubmitting(false)
     }
+  }
+
+  if (isLoading) {
+    return null
   }
 
   if (submitted) {
@@ -85,11 +99,15 @@ export default function SubmitPage() {
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center space-y-4">
           <CheckCircle className="w-16 h-16 text-[#00ff9d] mx-auto" />
-          <h1 className="text-3xl font-mono font-bold">Issue Submitted!</h1>
-          <p className="text-muted-foreground">Thank you for contributing to LinuxFixHub. Redirecting...</p>
+          <h1 className="text-3xl font-mono font-bold">Problem Posted!</h1>
+          <p className="text-muted-foreground">Thank you for your question. Redirecting...</p>
         </div>
       </div>
     )
+  }
+
+  if (!user) {
+    return null
   }
 
   return (
@@ -103,21 +121,20 @@ export default function SubmitPage() {
 
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-mono font-bold mb-2">Submit a Linux Fix</h1>
-          <p className="text-muted-foreground">Help the community by sharing your solution</p>
+          <h1 className="text-3xl font-mono font-bold mb-2">Ask a Linux Problem</h1>
+          <p className="text-muted-foreground">Get help from the community with your Linux issues</p>
         </div>
 
         <Card className="p-6 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Title */}
             <div>
               <label className="block text-sm font-mono font-semibold mb-2">
-                Issue Title <span className="text-red-500">*</span>
+                Question Title <span className="text-red-500">*</span>
               </label>
               <Input
                 type="text"
                 name="title"
-                placeholder="e.g., No Sound Output on Ubuntu 22.04"
+                placeholder="e.g., How do I fix no sound output on Ubuntu?"
                 value={formData.title}
                 onChange={handleChange}
                 className="font-mono"
@@ -125,14 +142,13 @@ export default function SubmitPage() {
               />
             </div>
 
-            {/* Description */}
             <div>
               <label className="block text-sm font-mono font-semibold mb-2">
-                Description <span className="text-red-500">*</span>
+                Problem Description <span className="text-red-500">*</span>
               </label>
               <Textarea
                 name="description"
-                placeholder="Describe the issue in detail..."
+                placeholder="Describe your problem in detail. What have you tried so far?"
                 value={formData.description}
                 onChange={handleChange}
                 className="font-mono min-h-24"
@@ -140,7 +156,6 @@ export default function SubmitPage() {
               />
             </div>
 
-            {/* Distro and Category */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-mono font-semibold mb-2">
@@ -181,53 +196,24 @@ export default function SubmitPage() {
               </div>
             </div>
 
-            {/* Tags */}
             <div>
               <label className="block text-sm font-mono font-semibold mb-2">Tags</label>
               <Input
                 type="text"
                 name="tags"
-                placeholder="e.g., audio, pulseaudio, alsa (comma-separated)"
+                placeholder="e.g., audio, networking, boot (comma-separated)"
                 value={formData.tags}
                 onChange={handleChange}
                 className="font-mono"
               />
             </div>
 
-            {/* Steps to Fix */}
-            <div>
-              <label className="block text-sm font-mono font-semibold mb-2">
-                Steps to Fix <span className="text-red-500">*</span>
-              </label>
-              <Textarea
-                name="stepsToFix"
-                placeholder="1. First step&#10;2. Second step&#10;3. Third step"
-                value={formData.stepsToFix}
-                onChange={handleChange}
-                className="font-mono min-h-32"
-                required
-              />
-            </div>
-
-            {/* Commands */}
-            <div>
-              <label className="block text-sm font-mono font-semibold mb-2">Commands Used</label>
-              <Textarea
-                name="commands"
-                placeholder="Enter each command on a new line&#10;e.g.:&#10;aplay -l&#10;systemctl restart pulseaudio"
-                value={formData.commands}
-                onChange={handleChange}
-                className="font-mono min-h-24"
-              />
-            </div>
-
-            {/* Submit Button */}
             <Button
               type="submit"
-              disabled={isLoading}
-              className="w-full bg-[#00ff9d] text-black hover:bg-[#00ff9d]/90 font-mono font-semibold"
+              disabled={isSubmitting}
+              className="w-full bg-blue-600 text-white hover:bg-blue-700 font-mono font-semibold"
             >
-              {isLoading ? "Submitting..." : "Submit Issue"}
+              {isSubmitting ? "Posting..." : "Post Question"}
             </Button>
           </form>
         </Card>

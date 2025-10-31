@@ -8,37 +8,47 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { useIssueStore } from "@/lib/store"
-import { initialIssues } from "@/lib/data"
+import { useComments } from "@/hooks/use-comments"
+import type { Issue } from "@/lib/data"
 import { ThumbsUp, Copy, ArrowLeft, Send } from "lucide-react"
 
 export default function IssuePage() {
   const params = useParams()
   const issueId = params.id as string
-  const [mounted, setMounted] = useState(false)
+  const [issue, setIssue] = useState<Issue | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const [commentAuthor, setCommentAuthor] = useState("")
   const [commentText, setCommentText] = useState("")
   const [copied, setCopied] = useState(false)
   const [userUpvoted, setUserUpvoted] = useState(false)
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false)
 
-  const issues = useIssueStore((state) => state.issues)
-  const allComments = useIssueStore((state) => state.comments)
-  const addComment = useIssueStore((state) => state.addComment)
-  const updateUpvotes = useIssueStore((state) => state.updateIssueUpvotes)
+  const { comments, mutate: mutateComments } = useComments(issueId)
 
+  // Fetch issue details
   useEffect(() => {
-    setMounted(true)
-    if (issues.length === 0) {
-      initialIssues.forEach((issue) => {
-        useIssueStore.getState().addIssue(issue)
-      })
+    const fetchIssue = async () => {
+      try {
+        const response = await fetch(`/api/issues?search=${issueId}`)
+        const data = await response.json()
+        const foundIssue = data.find((i: Issue) => i.id === issueId)
+        setIssue(foundIssue || null)
+      } catch (error) {
+        console.error("[v0] Error fetching issue:", error)
+      } finally {
+        setIsLoading(false)
+      }
     }
-  }, [issues.length])
+    fetchIssue()
+  }, [issueId])
 
-  if (!mounted) return null
-
-  const issue = issues.find((i) => i.id === issueId)
-  const comments = allComments[issueId] || []
+  if (isLoading) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    )
+  }
 
   if (!issue) {
     return (
@@ -62,23 +72,43 @@ export default function IssuePage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const handleUpvote = () => {
+  const handleUpvote = async () => {
     if (!userUpvoted) {
-      updateUpvotes(issueId, 1)
-      setUserUpvoted(true)
+      try {
+        await fetch(`/api/issues/${issueId}/upvote`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ upvotes: issue.upvotes + 1 }),
+        })
+        setIssue({ ...issue, upvotes: issue.upvotes + 1 })
+        setUserUpvoted(true)
+      } catch (error) {
+        console.error("[v0] Error upvoting:", error)
+      }
     }
   }
 
-  const handleAddComment = () => {
+  const handleAddComment = async () => {
     if (commentAuthor.trim() && commentText.trim()) {
-      addComment(issueId, {
-        id: Date.now().toString(),
-        author: commentAuthor,
-        text: commentText,
-        createdAt: new Date().toLocaleDateString(),
-      })
-      setCommentAuthor("")
-      setCommentText("")
+      setIsSubmittingComment(true)
+      try {
+        await fetch("/api/comments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            issueId,
+            author: commentAuthor,
+            text: commentText,
+          }),
+        })
+        setCommentAuthor("")
+        setCommentText("")
+        mutateComments()
+      } catch (error) {
+        console.error("[v0] Error adding comment:", error)
+      } finally {
+        setIsSubmittingComment(false)
+      }
     }
   }
 
@@ -160,15 +190,21 @@ export default function IssuePage() {
         <div className="space-y-4">
           <h2 className="text-2xl font-mono font-bold">Comments</h2>
           <Card className="p-4 space-y-3">
-            {comments.map((comment) => (
-              <div key={comment.id} className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-sm text-muted-foreground">{comment.author}</span>
-                  <span className="text-xs text-muted-foreground">{comment.createdAt}</span>
+            {comments.length > 0 ? (
+              comments.map((comment) => (
+                <div key={comment.id} className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-sm text-muted-foreground">{comment.author}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(comment.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-foreground text-sm leading-relaxed">{comment.text}</p>
                 </div>
-                <p className="text-foreground text-sm leading-relaxed">{comment.text}</p>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-muted-foreground text-sm">No comments yet. Be the first!</p>
+            )}
           </Card>
         </div>
 
@@ -190,11 +226,11 @@ export default function IssuePage() {
             />
             <Button
               onClick={handleAddComment}
-              disabled={!commentAuthor.trim() || !commentText.trim()}
+              disabled={!commentAuthor.trim() || !commentText.trim() || isSubmittingComment}
               className="w-full"
             >
               <Send className="w-4 h-4 mr-2" />
-              Post Comment
+              {isSubmittingComment ? "Posting..." : "Post Comment"}
             </Button>
           </div>
         </Card>

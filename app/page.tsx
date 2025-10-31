@@ -115,6 +115,23 @@ export default function Home() {
         </div>
       </section>
 
+      {/* New CTA for Problems */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <Card className="p-8 sm:p-12 border-blue-500/30 bg-blue-500/5">
+          <div className="text-center space-y-4">
+            <h2 className="text-2xl sm:text-3xl font-mono font-bold">Need Help with Your Linux Setup?</h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Ask your questions and get answers from experienced Linux users in the community.
+            </p>
+            <Link href="/ask-problem">
+              <Button size="lg" className="bg-blue-600 text-white hover:bg-blue-700 font-mono font-semibold">
+                Ask a Question
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      </section>
+
       {/* CTA Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <Card className="p-8 sm:p-12 border-[#00ff9d]/30 bg-[#00ff9d]/5">
