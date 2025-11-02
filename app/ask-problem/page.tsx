@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -96,11 +95,11 @@ export default function AskProblemPage() {
 
   if (submitted) {
     return (
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="text-center space-y-4">
-          <CheckCircle className="w-16 h-16 text-[#00ff9d] mx-auto" />
-          <h1 className="text-3xl font-mono font-bold">Problem Posted!</h1>
-          <p className="text-muted-foreground">Thank you for your question. Redirecting...</p>
+          <CheckCircle className="w-12 sm:w-16 h-12 sm:h-16 text-[#00ff9d] mx-auto" />
+          <h1 className="text-2xl sm:text-3xl font-mono font-bold">Problem Posted!</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Thank you for your question. Redirecting...</p>
         </div>
       </div>
     )
@@ -111,9 +110,9 @@ export default function AskProblemPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <Link href="/">
-        <Button variant="ghost" className="mb-6">
+        <Button variant="ghost" className="mb-6 text-sm sm:text-base">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Home
         </Button>
@@ -121,14 +120,16 @@ export default function AskProblemPage() {
 
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-mono font-bold mb-2">Ask a Linux Problem</h1>
-          <p className="text-muted-foreground">Get help from the community with your Linux issues</p>
+          <h1 className="text-2xl sm:text-3xl font-mono font-bold mb-2">Ask a Linux Problem</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Get help from the community with your Linux issues
+          </p>
         </div>
 
-        <Card className="p-6 sm:p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <Card className="p-4 sm:p-6 lg:p-8">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             <div>
-              <label className="block text-sm font-mono font-semibold mb-2">
+              <label className="block text-xs sm:text-sm font-mono font-semibold mb-2">
                 Question Title <span className="text-red-500">*</span>
               </label>
               <Input
@@ -137,13 +138,13 @@ export default function AskProblemPage() {
                 placeholder="e.g., How do I fix no sound output on Ubuntu?"
                 value={formData.title}
                 onChange={handleChange}
-                className="font-mono"
+                className="font-mono text-sm"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-mono font-semibold mb-2">
+              <label className="block text-xs sm:text-sm font-mono font-semibold mb-2">
                 Problem Description <span className="text-red-500">*</span>
               </label>
               <Textarea
@@ -151,21 +152,21 @@ export default function AskProblemPage() {
                 placeholder="Describe your problem in detail. What have you tried so far?"
                 value={formData.description}
                 onChange={handleChange}
-                className="font-mono min-h-24"
+                className="font-mono text-sm min-h-20 sm:min-h-24"
                 required
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <label className="block text-sm font-mono font-semibold mb-2">
+                <label className="block text-xs sm:text-sm font-mono font-semibold mb-2">
                   Distribution <span className="text-red-500">*</span>
                 </label>
                 <select
                   name="distro"
                   value={formData.distro}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 bg-card border border-border rounded-md font-mono text-sm"
+                  className="w-full px-3 py-2 bg-card border border-border rounded-md font-mono text-xs sm:text-sm"
                 >
                   {DISTROS.map((distro) => (
                     <option key={distro} value={distro}>
@@ -176,14 +177,14 @@ export default function AskProblemPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-mono font-semibold mb-2">
+                <label className="block text-xs sm:text-sm font-mono font-semibold mb-2">
                   Category <span className="text-red-500">*</span>
                 </label>
                 <select
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 bg-card border border-border rounded-md font-mono text-sm"
+                  className="w-full px-3 py-2 bg-card border border-border rounded-md font-mono text-xs sm:text-sm"
                   required
                 >
                   <option value="">Select a category</option>
@@ -197,21 +198,21 @@ export default function AskProblemPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-mono font-semibold mb-2">Tags</label>
+              <label className="block text-xs sm:text-sm font-mono font-semibold mb-2">Tags</label>
               <Input
                 type="text"
                 name="tags"
                 placeholder="e.g., audio, networking, boot (comma-separated)"
                 value={formData.tags}
                 onChange={handleChange}
-                className="font-mono"
+                className="font-mono text-sm"
               />
             </div>
 
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-blue-600 text-white hover:bg-blue-700 font-mono font-semibold"
+              className="w-full bg-blue-600 text-white hover:bg-blue-700 font-mono font-semibold py-6"
             >
               {isSubmitting ? "Posting..." : "Post Question"}
             </Button>

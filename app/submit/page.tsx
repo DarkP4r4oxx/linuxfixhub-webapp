@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -10,12 +9,10 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { CATEGORIES, DISTROS } from "@/lib/data"
-import { useIssueStore } from "@/lib/store"
 import { ArrowLeft, CheckCircle } from "lucide-react"
 
 export default function SubmitPage() {
   const router = useRouter()
-  const addIssue = useIssueStore((state) => state.addIssue)
   const [submitted, setSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -82,20 +79,22 @@ export default function SubmitPage() {
 
   if (submitted) {
     return (
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="text-center space-y-4">
-          <CheckCircle className="w-16 h-16 text-[#00ff9d] mx-auto" />
-          <h1 className="text-3xl font-mono font-bold">Issue Submitted!</h1>
-          <p className="text-muted-foreground">Thank you for contributing to LinuxFixHub. Redirecting...</p>
+          <CheckCircle className="w-12 sm:w-16 h-12 sm:h-16 text-[#00ff9d] mx-auto" />
+          <h1 className="text-2xl sm:text-3xl font-mono font-bold">Issue Submitted!</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Thank you for contributing to LinuxFixHub. Redirecting...
+          </p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <Link href="/">
-        <Button variant="ghost" className="mb-6">
+        <Button variant="ghost" className="mb-6 text-sm sm:text-base">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Home
         </Button>
@@ -103,15 +102,15 @@ export default function SubmitPage() {
 
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-mono font-bold mb-2">Submit a Linux Fix</h1>
-          <p className="text-muted-foreground">Help the community by sharing your solution</p>
+          <h1 className="text-2xl sm:text-3xl font-mono font-bold mb-2">Submit a Linux Fix</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Help the community by sharing your solution</p>
         </div>
 
-        <Card className="p-6 sm:p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <Card className="p-4 sm:p-6 lg:p-8">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Title */}
             <div>
-              <label className="block text-sm font-mono font-semibold mb-2">
+              <label className="block text-xs sm:text-sm font-mono font-semibold mb-2">
                 Issue Title <span className="text-red-500">*</span>
               </label>
               <Input
@@ -120,14 +119,14 @@ export default function SubmitPage() {
                 placeholder="e.g., No Sound Output on Ubuntu 22.04"
                 value={formData.title}
                 onChange={handleChange}
-                className="font-mono"
+                className="font-mono text-sm"
                 required
               />
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-mono font-semibold mb-2">
+              <label className="block text-xs sm:text-sm font-mono font-semibold mb-2">
                 Description <span className="text-red-500">*</span>
               </label>
               <Textarea
@@ -135,22 +134,22 @@ export default function SubmitPage() {
                 placeholder="Describe the issue in detail..."
                 value={formData.description}
                 onChange={handleChange}
-                className="font-mono min-h-24"
+                className="font-mono text-sm min-h-20 sm:min-h-24"
                 required
               />
             </div>
 
             {/* Distro and Category */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <label className="block text-sm font-mono font-semibold mb-2">
+                <label className="block text-xs sm:text-sm font-mono font-semibold mb-2">
                   Distribution <span className="text-red-500">*</span>
                 </label>
                 <select
                   name="distro"
                   value={formData.distro}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 bg-card border border-border rounded-md font-mono text-sm"
+                  className="w-full px-3 py-2 bg-card border border-border rounded-md font-mono text-xs sm:text-sm"
                 >
                   {DISTROS.map((distro) => (
                     <option key={distro} value={distro}>
@@ -161,14 +160,14 @@ export default function SubmitPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-mono font-semibold mb-2">
+                <label className="block text-xs sm:text-sm font-mono font-semibold mb-2">
                   Category <span className="text-red-500">*</span>
                 </label>
                 <select
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 bg-card border border-border rounded-md font-mono text-sm"
+                  className="w-full px-3 py-2 bg-card border border-border rounded-md font-mono text-xs sm:text-sm"
                   required
                 >
                   <option value="">Select a category</option>
@@ -183,20 +182,20 @@ export default function SubmitPage() {
 
             {/* Tags */}
             <div>
-              <label className="block text-sm font-mono font-semibold mb-2">Tags</label>
+              <label className="block text-xs sm:text-sm font-mono font-semibold mb-2">Tags</label>
               <Input
                 type="text"
                 name="tags"
                 placeholder="e.g., audio, pulseaudio, alsa (comma-separated)"
                 value={formData.tags}
                 onChange={handleChange}
-                className="font-mono"
+                className="font-mono text-sm"
               />
             </div>
 
             {/* Steps to Fix */}
             <div>
-              <label className="block text-sm font-mono font-semibold mb-2">
+              <label className="block text-xs sm:text-sm font-mono font-semibold mb-2">
                 Steps to Fix <span className="text-red-500">*</span>
               </label>
               <Textarea
@@ -204,20 +203,20 @@ export default function SubmitPage() {
                 placeholder="1. First step&#10;2. Second step&#10;3. Third step"
                 value={formData.stepsToFix}
                 onChange={handleChange}
-                className="font-mono min-h-32"
+                className="font-mono text-sm min-h-28 sm:min-h-32"
                 required
               />
             </div>
 
             {/* Commands */}
             <div>
-              <label className="block text-sm font-mono font-semibold mb-2">Commands Used</label>
+              <label className="block text-xs sm:text-sm font-mono font-semibold mb-2">Commands Used</label>
               <Textarea
                 name="commands"
                 placeholder="Enter each command on a new line&#10;e.g.:&#10;aplay -l&#10;systemctl restart pulseaudio"
                 value={formData.commands}
                 onChange={handleChange}
-                className="font-mono min-h-24"
+                className="font-mono text-sm min-h-20 sm:min-h-24"
               />
             </div>
 
@@ -225,7 +224,7 @@ export default function SubmitPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#00ff9d] text-black hover:bg-[#00ff9d]/90 font-mono font-semibold"
+              className="w-full bg-[#00ff9d] text-black hover:bg-[#00ff9d]/90 font-mono font-semibold py-6"
             >
               {isLoading ? "Submitting..." : "Submit Issue"}
             </Button>
